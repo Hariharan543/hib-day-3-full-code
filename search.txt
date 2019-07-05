@@ -1,0 +1,155 @@
+BO
+
+public Employee validateEmployeeSearch(Employee d) throws EMPException {
+			// TODO Auto-generated method stub
+			
+			EmployeeDAO ddao=new EmployeeDAO();
+			Employee res=ddao.searchEmployee(d);
+			//System.out.println("jkjh");
+			
+			return res;
+		}
+
+
+servlet:
+
+int empno=Integer.parseInt(request.getParameter("empno"));
+		Employee d=new Employee();
+		
+		
+		d.setEmpNo(empno);
+		
+		
+		Employee b;
+		try {
+			b = new EmployeeBO().validateEmployeeSearch(d);
+		
+	//	System.out.println("kjkljl");
+		if(d.getEmpNo()!=0)
+		{
+			HttpSession sess=request.getSession();
+			RequestDispatcher rd=request.getRequestDispatcher("searchEmployee.jsp");  
+			sess.setAttribute("Employee", b);
+			rd.forward(request, response);
+		//	response.sendRedirect("adminHome.jsp");		
+		}
+		else
+		{
+			RequestDispatcher rd=request.getRequestDispatcher("searchEmployee.jsp");  
+			  request.setAttribute("errorReason", "Invalid EmpNO!");
+			rd.forward(request, response);
+		}}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		
+		
+		}	
+
+
+
+DAO
+
+public Employee searchEmployee(Employee d) throws EMPException {
+		// TODO Auto-generated method stub
+		Employee pro=new Employee();
+		try{
+			
+		
+	
+			SessionFactory sf=new AnnotationConfiguration().configure().addAnnotatedClass(Employee.class).buildSessionFactory();
+			Session s=sf.openSession();
+			Transaction tc=s.beginTransaction();
+			String hql1 = "FROM Employee P WHERE P.EmpNo=:empno";
+			
+			Query q = s.createQuery(hql1);
+			q.setInteger("empno",d.getEmpNo());
+			
+			List results = q.list();
+			
+			//System.out.println("------------------------------------------------");
+			//System.out.format("%-15s %-15s %-15s %-15s %-15s %-15s %n", "EmpNo ",  "First Name ","Last Name","Email","Mobile","Depat No" );
+			//System.out.println("------------------------------------------------");
+			for(Iterator i=results.iterator();i.hasNext();)
+			{
+				
+			 pro=(Employee) i.next();
+				//System.out.format("%-15s %-15s %-15s %-15s %-15s %-15s %n", pro.getEmpNo(),pro.getFirstName(),pro.getLastName(),pro.getEmail(),pro.getMobile(),pro.getDeptNO());
+			}	
+		}
+		
+		catch(Exception e)
+        {
+        	throw new EMPException(e.getMessage());
+        }
+		
+		return pro;
+	}
+			
+
+
+
+
+
+
+
+
+
+
+JSP
+
+
+<%@page import="com.dsrc.bean.Employee"%>
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+
+<IMG SRC="file:///C:/Users/dsrcuser1/Music/Day28HibernateDay4Question1/WebContent/Logo.png">
+<hr>
+<form action="EmployeeSearch">
+<TABLE>
+<TR><TD>Employee NO</TD><TD><input type="text" name="empno" ></TD></TR><BR><BR>
+    <tr><td><input type="submit" value="Search"  >
+
+</TABLE>
+<%
+if(session.getAttribute("Employee")!=null)
+{
+Employee e=(Employee)session.getAttribute("Employee");
+
+%>
+</form>
+<center>
+<table border="1">
+<tr><td>Empno</td><td><%= e.getEmpNo() %></td></tr>
+<tr><td>Fname</td><td><%= e.getFirstName() %></td></tr>
+<tr><td>Lname</td><td><%= e.getLastName() %></td></tr>
+<tr><td>Email</td><td><%= e.getEmail() %></td></tr>
+<tr><td>Phone</td><td><%= e.getMobile() %></td></tr>
+<tr><td>DeptId</td><td><%= e.getDeptNO() %></td></tr>
+</table>
+</center>
+
+<%
+}
+%>
+<%
+if(request.getAttribute("errorReason")!=null)
+{ 
+%>
+
+<font color="red"><%= request.getAttribute("errorReason") %></font>
+
+<% 
+}
+%>
+</body>
+</html>
+}
